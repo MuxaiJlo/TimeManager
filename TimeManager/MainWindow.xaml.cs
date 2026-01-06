@@ -19,6 +19,7 @@ namespace TimeManager
         public MainWindow()
         {
             InitializeComponent();
+
         }
     }
 }
