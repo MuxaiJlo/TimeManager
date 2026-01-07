@@ -5,7 +5,9 @@
         WindowStartupLocation="CenterScreen"
         xmlns:v="clr-namespace:TimeManager.View"
         ResizeMode="NoResize">
-
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </Window.Resources>
     <Window.Background>
         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
             <GradientStop Color="#2E2E2E" Offset="0.0"/>
@@ -19,14 +21,123 @@
             <ColumnDefinition Width="0.55*"/>
         </Grid.ColumnDefinitions>
 
-        <GroupBox Header="Процессы" Foreground="White" BorderBrush="#444" Margin="0,0,10,0">
-            <ListBox x:Name="ProcessList" 
-                     Background="Transparent" 
-                     BorderThickness="0"
-                     ScrollViewer.VerticalScrollBarVisibility="Auto">
-            </ListBox>
-        </GroupBox>
+        <GroupBox Header="List of Procesess" Foreground="White" BorderBrush="#444" Margin="0,0,10,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
+                <Button Content="+" Command="{Binding ShowFormCommand}" 
+                Background="#444" Foreground="White" Margin="5"/>
+
+                <StackPanel Grid.Row="1" Margin="5" 
+                    Visibility="{Binding IsFormVisible, Converter={StaticResource BoolToVis}}">
+
+                    <TextBox Text="{Binding NewTitle, UpdateSourceTrigger=PropertyChanged}" 
+                     Tag="Название..." Margin="2"/>
+                    <TextBox Text="{Binding NewStart, UpdateSourceTrigger=PropertyChanged}" 
+                     Tag="Начало (14:00)" Margin="2"/>
+                    <TextBox Text="{Binding NewEnd, UpdateSourceTrigger=PropertyChanged}" 
+                     Tag="Конец (15:30)" Margin="2"/>
+                    <TextBox Text="{Binding NewColor, UpdateSourceTrigger=PropertyChanged}" 
+                     Tag="Цвет (#FF0000)" Margin="2"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                        <TextBlock Text="Colors:" Foreground="White" VerticalAlignment="Center" Margin="0,0,10,0"/>
+
+                        <ItemsControl ItemsSource="{Binding PresetColors}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Command="{Binding DataContext.SelectColorCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                        CommandParameter="{Binding}"
+                        Width="20" Height="20" Margin="2" Cursor="Hand">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Ellipse Fill="{Binding}" Stroke="White" StrokeThickness="1"/>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <Button Content="Save" Command="{Binding AddTaskCommand}" 
+                    Background="Green" Foreground="White" Margin="5"/>
+                    
+                </StackPanel>
+
+                <ListBox Grid.Row="2" ItemsSource="{Binding Slots}" Background="Transparent" BorderThickness="0">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="5" CornerRadius="10" BorderBrush="Silver" BorderThickness="1.5">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#444" Offset="0.0"/>
+                                        <GradientStop Color="#222" Offset="1.0"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="5" Opacity="0.3" ShadowDepth="2"/>
+                                </Border.Effect>
+
+                                <!-- FIX: Replace Grid Padding="10" with Margin="10" -->
+                                <Grid Margin="10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Ellipse Width="15" Height="15" Fill="{Binding ColorHex}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding ProcessName}" FontWeight="Bold" Foreground="White" FontSize="14"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding StartTime, StringFormat=hh:mm}" Foreground="Silver" HorizontalAlignment="Right"/>
+                                        <TextBlock Text="{Binding EndTime, StringFormat=hh:mm}" Foreground="Silver" HorizontalAlignment="Right"/>
+                                    </StackPanel>
+                                    <Button Grid.Column="3" 
+                            Content="✕" 
+                            Command="{Binding DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                            CommandParameter="{Binding}"
+                            Background="Transparent" 
+                            Foreground="#FF5555" 
+                            BorderThickness="0" 
+                            FontSize="18"
+                            Cursor="Hand"
+                            VerticalAlignment="Center">
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <Setter Property="Opacity" Value="0.6"/>
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Opacity" Value="1.0"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </GroupBox>
+        
         <Grid Grid.Column="1" x:Name="ClockContainer">
             <v:ClockControl x:Name="ClockControl" />
         </Grid>

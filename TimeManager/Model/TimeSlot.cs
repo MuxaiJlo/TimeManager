@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
 
-namespace TimeManager
+namespace TimeManager.Model
 {
     public class TimeSlot
     {
