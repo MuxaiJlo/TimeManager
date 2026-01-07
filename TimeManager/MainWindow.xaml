@@ -73,63 +73,46 @@
                     
                 </StackPanel>
 
-                <ListBox Grid.Row="2" ItemsSource="{Binding Slots}" Background="Transparent" BorderThickness="0">
+                <ListBox Grid.Row="2" ItemsSource="{Binding Slots}" 
+         Background="Transparent" BorderThickness="0"
+         HorizontalContentAlignment="Stretch">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <Border Margin="5" CornerRadius="10" BorderBrush="Silver" BorderThickness="1.5">
+                            <Border Margin="10,5" CornerRadius="12" BorderBrush="Silver" BorderThickness="1">
                                 <Border.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                        <GradientStop Color="#444" Offset="0.0"/>
-                                        <GradientStop Color="#222" Offset="1.0"/>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#3A3A3A" Offset="0"/>
+                                        <GradientStop Color="#252525" Offset="1"/>
                                     </LinearGradientBrush>
                                 </Border.Background>
-                                <Border.Effect>
-                                    <DropShadowEffect BlurRadius="5" Opacity="0.3" ShadowDepth="2"/>
-                                </Border.Effect>
 
-                                <!-- FIX: Replace Grid Padding="10" with Margin="10" -->
-                                <Grid Margin="10">
+                                <Grid Height="60" Margin="15,0">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="50"/>
                                         <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition Width="40"/>
                                     </Grid.ColumnDefinitions>
 
-                                    <Ellipse Width="15" Height="15" Fill="{Binding ColorHex}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                    <Ellipse Grid.Column="0" Width="18" Height="18" 
+                             Fill="{Binding ColorHex}" 
+                             HorizontalAlignment="Left" VerticalAlignment="Center"/>
 
-                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding ProcessName}" FontWeight="Bold" Foreground="White" FontSize="14"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding ProcessName}" 
+                               Foreground="White" FontWeight="SemiBold" FontSize="15"
+                               VerticalAlignment="Center" HorizontalAlignment="Center" 
+                               TextTrimming="CharacterEllipsis"/>
+
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                        <TextBlock Text="{Binding StartTime}" Foreground="White" FontSize="12" HorizontalAlignment="Right"/>
+                                        <TextBlock Text="{Binding EndTime}" Foreground="Silver" FontSize="11" HorizontalAlignment="Right"/>
                                     </StackPanel>
 
-                                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding StartTime, StringFormat=hh:mm}" Foreground="Silver" HorizontalAlignment="Right"/>
-                                        <TextBlock Text="{Binding EndTime, StringFormat=hh:mm}" Foreground="Silver" HorizontalAlignment="Right"/>
-                                    </StackPanel>
-                                    <Button Grid.Column="3" 
-                            Content="✕" 
-                            Command="{Binding DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                    <Button Grid.Column="3" Content="✕" 
+                            Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
                             CommandParameter="{Binding}"
-                            Background="Transparent" 
-                            Foreground="#FF5555" 
-                            BorderThickness="0" 
-                            FontSize="18"
-                            Cursor="Hand"
-                            VerticalAlignment="Center">
-                                        <Button.Style>
-                                            <Style TargetType="Button">
-                                                <Setter Property="Opacity" Value="0.6"/>
-                                                <Style.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter Property="Opacity" Value="1.0"/>
-                                                    </Trigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Button.Style>
-                                    </Button>
+                            Background="Transparent" Foreground="#FF4444" BorderThickness="0"
+                            FontSize="16" Cursor="Hand" VerticalAlignment="Center" HorizontalAlignment="Right"/>
                                 </Grid>
                             </Border>
                         </DataTemplate>

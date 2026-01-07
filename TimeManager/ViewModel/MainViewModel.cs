@@ -35,7 +35,7 @@ namespace TimeManager.ViewModel
         public ICommand ShowFormCommand { get; }
         public ICommand AddTaskCommand { get; }
         public ICommand SelectColorCommand { get; }
-        public ICommand DeleteTaskForm { get; }
+        public ICommand DeleteTaskCommand { get; }
 
         public MainViewModel()
         {
@@ -46,7 +46,7 @@ namespace TimeManager.ViewModel
                 NewColor = color.ToString();
                 OnPropertyChanged(nameof(NewColor));
             });
-            DeleteTaskForm = new RelayCommand(taskObj =>
+            DeleteTaskCommand = new RelayCommand(taskObj =>
             {
                 if (taskObj is TimeSlot task && Slots.Contains(task))
                 {
