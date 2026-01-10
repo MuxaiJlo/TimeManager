@@ -20,8 +20,7 @@
             <ColumnDefinition Width="0.45*"/>
             <ColumnDefinition Width="0.55*"/>
         </Grid.ColumnDefinitions>
-
-        <GroupBox Header="List of Procesess" Foreground="White" BorderBrush="#444" Margin="0,0,10,0">
+        <GroupBox Header="List of Procesess" Foreground="White" BorderBrush="#444" Margin="0,0,10,100">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -70,7 +69,7 @@
 
                     <Button Content="Save" Command="{Binding AddTaskCommand}" 
                     Background="Green" Foreground="White" Margin="5"/>
-                    
+
                 </StackPanel>
 
                 <ListBox Grid.Row="2" ItemsSource="{Binding Slots}" 
@@ -120,9 +119,10 @@
                 </ListBox>
             </Grid>
         </GroupBox>
-        
+
         <Grid Grid.Column="1" x:Name="ClockContainer">
             <v:ClockControl x:Name="ClockControl" />
         </Grid>
+        <Button Content="Тест уведомления" Click="TestNotification_Click" HorizontalAlignment="Left" Margin="125,459,0,0" VerticalAlignment="Top" Width="156"/>
     </Grid>
 </Window>

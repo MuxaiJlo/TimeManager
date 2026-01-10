@@ -13,6 +13,9 @@ namespace TimeManager.Model
         public TimeOnly StartTime { get; set; }
         public TimeOnly EndTime { get; set; }
         public string ColorHex{ get; set; } = "#FFFFFF";
+        public bool StartNotified { get; set; }
+        public bool MidNotified { get; set; }
+        public bool EndNotified { get; set; }
         public TimeSpan Duration
         {
             get

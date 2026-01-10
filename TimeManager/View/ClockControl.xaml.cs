@@ -103,7 +103,7 @@ namespace TimeManager.View
                 {
                     path.Fill = Brushes.Gray;
                 }
-                path.Opacity = 0.25;
+                path.Opacity = 0.6;
 
                 SegmentsCanvas.Children.Add(path);
             }
@@ -129,10 +129,31 @@ namespace TimeManager.View
                     Y1 = startTick.Y,
                     X2 = endTick.X,
                     Y2 = endTick.Y,
-                    Stroke = Brushes.DimGray,
+                    Stroke = Brushes.Black,
                     StrokeThickness = 4
                 };
                 HoursCanvas.Children.Add(tick);
+
+                // Add numeric label
+                double labelRadius = baseRadius - 45; // Slightly inside the tick
+                Point labelPoint = GetPointOnClock(CalculateAngle(time), labelRadius, center);
+
+                TextBlock hourLabel = new TextBlock
+                {
+                    Text = (i == 0 ? "24" : i.ToString()),
+                    Foreground = Brushes.Black,
+                    FontSize = 16,
+                    FontWeight = FontWeights.Bold
+                };
+
+                // Center the text
+                hourLabel.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                Size textSize = hourLabel.DesiredSize;
+
+                Canvas.SetLeft(hourLabel, labelPoint.X - textSize.Width / 2);
+                Canvas.SetTop(hourLabel, labelPoint.Y - textSize.Height / 2);
+
+                HoursCanvas.Children.Add(hourLabel);
             }
         }
 

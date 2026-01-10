@@ -7,7 +7,14 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <Ellipse x:Name="FaceOutline" Stroke="Black" StrokeThickness="2" Fill="Gray"/>
+        <Ellipse x:Name="FaceOutline" Stroke="Silver" StrokeThickness="2">
+            <Ellipse.Fill>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#FFC1C1C1" Offset="0.0"/>
+                    <GradientStop Color="Gray" Offset="1.0"/>
+                </LinearGradientBrush>
+            </Ellipse.Fill>
+        </Ellipse>
         <Canvas x:Name="HoursCanvas" />
         <Canvas x:Name="SegmentsCanvas" />
     </Grid>
