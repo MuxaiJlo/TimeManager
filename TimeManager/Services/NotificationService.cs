@@ -1,114 +1,156 @@
-﻿using System;
+﻿using Microsoft.Toolkit.Uwp.Notifications;
+using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Security;
 using System.Windows.Threading;
-using Windows.Data.Xml.Dom;
-using Windows.UI.Notifications;
 using TimeManager.Model;
 
 namespace TimeManager.Services
 {
     internal class NotificationService
+{
+    private ObservableCollection<TimeSlot> _timeSlots;
+    private DispatcherTimer _timer;
+    private HashSet<string> _sentNotifications = new HashSet<string>();
+
+    public NotificationService(ObservableCollection<TimeSlot> timeSlots)
     {
-        private ObservableCollection<TimeSlot> _timeSlots;
-        private DispatcherTimer _timer;
-        private const string APP_ID = "TimeManager.App";
+        _timeSlots = timeSlots;
+        
+        _timer = new DispatcherTimer();
+        _timer.Interval = TimeSpan.FromSeconds(5); // Проверяем каждые 5 секунд
+        _timer.Tick += Timer_Tick;
+        _timer.Start();
+        
+        Debug.WriteLine($"✓ NotificationService запущен. Текущее время: {DateTime.Now:HH:mm:ss}");
+        Debug.WriteLine($"✓ Таймер настроен с интервалом {_timer.Interval.TotalSeconds} сек");
+        
+        // Первая проверка сразу
+        CheckAllSlots();
+    }
 
-        public NotificationService(ObservableCollection<TimeSlot> timeSlots)
+    private void Timer_Tick(object sender, EventArgs e)
+    {
+        CheckAllSlots();
+    }
+
+    private void CheckAllSlots()
+    {
+        var now = DateTime.Now;
+        Debug.WriteLine($"");
+        Debug.WriteLine($"========== ПРОВЕРКА В {now:HH:mm:ss} ==========");
+        Debug.WriteLine($"Количество слотов: {_timeSlots.Count}");
+        
+        if (_timeSlots.Count == 0)
         {
-            _timeSlots = timeSlots;
-            _timer = new DispatcherTimer();
-            _timer.Interval = TimeSpan.FromSeconds(1);
-            _timer.Tick += (s, e) => CheckAllSlots();
-            _timer.Start();
-
-            Debug.WriteLine($"NotificationService запущен. Текущее время: {DateTime.Now:HH:mm:ss}");
+            Debug.WriteLine("⚠ Нет слотов для проверки!");
+            return;
         }
-
-        private void CheckAllSlots()
+        
+        foreach (var slot in _timeSlots)
         {
-            var now = TimeOnly.FromDateTime(DateTime.Now);
-
-            foreach (var slot in _timeSlots)
-            {
-                CheckStartTime(slot, now);
-                CheckMidTime(slot, now);
-                CheckEndTime(slot, now);
-            }
+            Debug.WriteLine($"");
+            Debug.WriteLine($"Слот: '{slot.ProcessName}'");
+            Debug.WriteLine($"  Start: {slot.StartTime:HH:mm:ss}");
+            Debug.WriteLine($"  End: {slot.EndTime:HH:mm:ss}");
+            Debug.WriteLine($"  Duration: {slot.Duration.TotalMinutes:F1} мин");
+            
+            CheckStartTime(slot, now);
+            CheckMidTime(slot, now);
+            CheckEndTime(slot, now);
         }
+        
+        Debug.WriteLine($"========================================");
+    }
 
-        private void CheckStartTime(TimeSlot slot, TimeOnly now)
+    private void CheckStartTime(TimeSlot slot, DateTime now)
+    {
+        var startDateTime = DateTime.Today.Add(slot.StartTime.ToTimeSpan());
+        var diff = (now - startDateTime).TotalSeconds;
+        var notificationKey = $"start_{slot.ProcessName}_{startDateTime:yyyyMMddHHmm}";
+        
+        Debug.WriteLine($"  START проверка: разница {diff:F0} сек");
+        
+        if (!_sentNotifications.Contains(notificationKey) && Math.Abs(diff) <= 30)
         {
-            // Проверяем что время совпадает с точностью до минуты
-            if (!slot.StartNotified &&
-                now.Hour == slot.StartTime.Hour &&
-                now.Minute == slot.StartTime.Minute)
-            {
-                slot.StartNotified = true;
-                SendToast("Начало задачи", $"Началась задача: {slot.ProcessName}");
-                Debug.WriteLine($"[{DateTime.Now:HH:mm:ss}] Start notification sent for {slot.ProcessName}");
-            }
-        }
-
-        private void CheckMidTime(TimeSlot slot, TimeOnly now)
-        {
-            if (slot.Duration.TotalMinutes >= 2 && !slot.MidNotified)
-            {
-                var midTime = slot.StartTime.Add(TimeSpan.FromMinutes(slot.Duration.TotalMinutes / 2));
-
-                // Проверяем совпадение часа и минуты (без секунд!)
-                if (now.Hour == midTime.Hour && now.Minute == midTime.Minute)
-                {
-                    slot.MidNotified = true;
-                    SendToast("Середина задачи", $"Половина времени для: {slot.ProcessName}");
-                    Debug.WriteLine($"[{DateTime.Now:HH:mm:ss}] Mid notification sent for {slot.ProcessName}");
-                }
-            }
-        }
-
-        private void CheckEndTime(TimeSlot slot, TimeOnly now)
-        {
-            // Проверяем что время совпадает с точностью до минуты
-            if (!slot.EndNotified &&
-                now.Hour == slot.EndTime.Hour &&
-                now.Minute == slot.EndTime.Minute)
-            {
-                slot.EndNotified = true;
-                SendToast("Конец задачи", $"Закончилась задача: {slot.ProcessName}");
-                Debug.WriteLine($"[{DateTime.Now:HH:mm:ss}] End notification sent for {slot.ProcessName}");
-            }
-        }
-
-        private void SendToast(string title, string message)
-        {
-            try
-            {
-                Debug.WriteLine($"Попытка отправить уведомление: {title} - {message}");
-
-                string toastXml = $@"
-                    <toast>
-                        <visual>
-                            <binding template='ToastGeneric'>
-                                <text>{System.Security.SecurityElement.Escape(title)}</text>
-                                <text>{System.Security.SecurityElement.Escape(message)}</text>
-                            </binding>
-                        </visual>
-                        <audio src='ms-winsoundevent:Notification.Default'/>
-                    </toast>";
-
-                XmlDocument doc = new XmlDocument();
-                doc.LoadXml(toastXml);
-
-                ToastNotification toast = new ToastNotification(doc);
-                ToastNotificationManager.CreateToastNotifier(APP_ID).Show(toast);
-
-                Debug.WriteLine("Уведомление успешно отправлено!");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"ОШИБКА отправки уведомления: {ex.Message}");
-                Debug.WriteLine($"StackTrace: {ex.StackTrace}");
-            }
+            _sentNotifications.Add(notificationKey);
+            SendToast("🚀 Начало задачи", $"Началась задача: {slot.ProcessName}");
+            Debug.WriteLine($"  ✓✓✓ START уведомление отправлено!");
         }
     }
+
+    private void CheckMidTime(TimeSlot slot, DateTime now)
+    {
+        if (slot.Duration.TotalMinutes < 2)
+        {
+            Debug.WriteLine($"  MID пропущен (слишком короткая задача)");
+            return;
+        }
+
+        var startDateTime = DateTime.Today.Add(slot.StartTime.ToTimeSpan());
+        var midDateTime = startDateTime.Add(TimeSpan.FromMinutes(slot.Duration.TotalMinutes / 2));
+        var diff = (now - midDateTime).TotalSeconds;
+        var notificationKey = $"mid_{slot.ProcessName}_{midDateTime:yyyyMMddHHmm}";
+
+        Debug.WriteLine($"  MID проверка: разница {diff:F0} сек");
+
+        if (!_sentNotifications.Contains(notificationKey) && Math.Abs(diff) <= 30)
+        {
+            _sentNotifications.Add(notificationKey);
+            SendToast("⏱ Середина задачи", $"Половина времени для: {slot.ProcessName}");
+            Debug.WriteLine($"  ✓✓✓ MID уведомление отправлено!");
+        }
+    }
+
+    private void CheckEndTime(TimeSlot slot, DateTime now)
+    {
+        var endDateTime = DateTime.Today.Add(slot.EndTime.ToTimeSpan());
+        var diff = (now - endDateTime).TotalSeconds;
+        var notificationKey = $"end_{slot.ProcessName}_{endDateTime:yyyyMMddHHmm}";
+
+        Debug.WriteLine($"  END проверка: разница {diff:F0} сек");
+
+        if (!_sentNotifications.Contains(notificationKey) && Math.Abs(diff) <= 30)
+        {
+            _sentNotifications.Add(notificationKey);
+            SendToast("✅ Конец задачи", $"Закончилась задача: {slot.ProcessName}");
+            Debug.WriteLine($"  ✓✓✓ END уведомление отправлено!");
+        }
+    }
+
+    private void SendToast(string title, string message)
+    {
+        try
+        {
+            Debug.WriteLine($"");
+            Debug.WriteLine($">>> Отправка Toast: {title} - {message}");
+            
+            string toastXml = $@"
+            <toast>
+                <visual>
+                    <binding template='ToastGeneric'>
+                        <text>{System.Security.SecurityElement.Escape(title)}</text>
+                        <text>{System.Security.SecurityElement.Escape(message)}</text>
+                    </binding>
+                </visual>
+                <audio src='ms-winsoundevent:Notification.Default'/>
+            </toast>";
+
+            var doc = new Windows.Data.Xml.Dom.XmlDocument();
+            doc.LoadXml(toastXml);
+            
+            var toast = new Windows.UI.Notifications.ToastNotification(doc);
+            Windows.UI.Notifications.ToastNotificationManager
+                .CreateToastNotifier("TimeManager.App").Show(toast);
+            
+            Debug.WriteLine($">>> ✓ Toast отправлен успешно!");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($">>> ✗✗✗ ОШИБКА Toast: {ex.Message}");
+            Debug.WriteLine($">>> StackTrace: {ex.StackTrace}");
+        }
+    }
+}
 }

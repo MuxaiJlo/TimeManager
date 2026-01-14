@@ -21,14 +21,16 @@ namespace TimeManager
     public partial class MainWindow : Window
     {
         private TrayService _trayService;
-
+        private NotificationService _notificationService;
         public MainWindow()
         {
             InitializeComponent(); 
             var vm = new MainViewModel();
             this.DataContext = vm;
             _trayService = new TrayService(this);
+            _notificationService = new NotificationService(vm.Slots);
             ClockControl.SubscribeToData(vm.Slots);
+
         }
         protected override void OnStateChanged(EventArgs e)
         {

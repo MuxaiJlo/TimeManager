@@ -12,7 +12,7 @@ namespace TimeManager.Model
         public required string ProcessName { get; set; } 
         public TimeOnly StartTime { get; set; }
         public TimeOnly EndTime { get; set; }
-        public string ColorHex{ get; set; } = "#FFFFFF";
+        public string ColorHex{ get; set; } = "#000000";
         public bool StartNotified { get; set; }
         public bool MidNotified { get; set; }
         public bool EndNotified { get; set; }
@@ -24,6 +24,10 @@ namespace TimeManager.Model
                     return EndTime - StartTime;
 
                 return (TimeSpan.FromHours(24) - StartTime.ToTimeSpan()) + EndTime.ToTimeSpan();
+            }
+            set
+            {
+                EndTime = StartTime.Add(value);
             }
         }
     }

@@ -19,7 +19,7 @@ namespace TimeManager.ViewModel
 
         public ObservableCollection<string> PresetColors { get; } = new()
         {
-            "#FF5733", "#33FF57", "#3357FF", "#F333FF", "#FF33A8", "#33FFF3", "#FFC300", "#581845"
+            "#FF5733", "#33FF57", "#3357FF", "#F333FF", "#FF33A8", "#33FFF3", "#FFC300", "#581845", "#900C3F", "#DAF7A6"
         };
         private bool _isFormVisible;
         public bool IsFormVisible
@@ -55,8 +55,7 @@ namespace TimeManager.ViewModel
                 }
             });
         }
-
-        
+  
         private void AddNewTask()
         {
             if (TimeOnly.TryParse(NewStart, out TimeOnly startTime) && TimeOnly.TryParse(NewEnd, out TimeOnly endTime))
